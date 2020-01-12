@@ -1,0 +1,5 @@
+# python expt_titanic/autoencoder_training.py --device gpu --n-ally 1 --n-advr 1 --dim 588 --test-size 0.1 --batch-size 1024 --n-epochs 1001 --shuffle 1 --lr 0.0001 --expt titanic
+
+# python expt_mimic/autoencoder_training.py --device gpu --n-ally 1 --n-advr 1 --dim 176 --test-size 0.1 --batch-size 1024 --n-epochs 1001 --shuffle 1 --lr 0.0001 --expt mimic
+
+python expt_mnist/comparison.py --device gpu --n-ally 1 --n-advr 10 --dim 332 --hidden-dim 128 --leaky 1 --test-size 0.3 --batch-size 1024 --n-epochs 1001 --shuffle 1 --lr-ally 0.0001 --lr-advr 0.0001 --expt mnist --pca-ckpt checkpoints/mnist/pca_basic_sklearn_model_12_28_2019_13_22_22_dim_332.pkl --autoencoder-ckpt checkpoints/mnist/autoencoder_basic_torch_model_12_28_2019_10_39_40_device_cuda_dim_332_batch_1024_epochs_1001_lr_0.0001_tr_0.0008_val_0.0028.pkl --encoder-ckpt "checkpoints/mnist/eigan_torch_model_12_28_2019_20_40_59_G_device_cuda_dim_332_hidden_128_batch_2048_        epochs_1001_lrencd_0.0001_lrally_1e-05_lradvr_1e-05_tr_-0.8225_val_2.2082.pkl"

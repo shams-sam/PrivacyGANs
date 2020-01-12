@@ -1,9 +1,9 @@
 import torch
 
 
-class AutoEncoder(torch.nn.Module):
+class AutoEncoderBasic(torch.nn.Module):
     def __init__(self, input_size, encoding_dim):
-        super(AutoEncoder, self).__init__()
+        super(AutoEncoderBasic, self).__init__()
         self.input_size = input_size
         self.encoding_dim = encoding_dim
 

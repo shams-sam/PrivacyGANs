@@ -8,8 +8,8 @@ from sklearn.preprocessing import StandardScaler
 import torch
 import torch.utils.data as utils
 
-import os
 import sys
+import os
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/..")
 
 from common.argparser import autoencoder_argparse
@@ -177,7 +177,7 @@ def main(
 
 
 if __name__ == "__main__":
-    expt = 'titanic'
+    expt = 'mimic'
     model = 'autoencoder_basic'
     pr_time, fl_time = time_stp()
 
@@ -189,14 +189,14 @@ if __name__ == "__main__":
         model=model,
         time_stamp=fl_time,
         device=args['device'],
-        ally_classes=int(args['n_ally']),
-        advr_classes=int(args['n_advr']),
-        encoding_dim=int(args['dim']),
-        test_size=float(args['test_size']),
-        batch_size=int(args['batch_size']),
-        n_epochs=int(args['n_epochs']),
-        shuffle=int(args['shuffle']) == 1,
-        lr=float(args['lr']),
+        ally_classes=args['n_ally'],
+        advr_classes=args['n_advr'],
+        encoding_dim=args['dim'],
+        test_size=args['test_size'],
+        batch_size=args['batch_size'],
+        n_epochs=args['n_epochs'],
+        shuffle=args['shuffle'] == 1,
+        lr=args['lr'],
         expt=args['expt'],
     )
     log_time('End', time_stp()[0])

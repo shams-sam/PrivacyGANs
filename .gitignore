@@ -105,6 +105,6 @@ venv.bak/
 
 # user
 data/
-models/
 checkpoints/
 plots/
+logs/

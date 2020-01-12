@@ -1,23 +1,21 @@
 import logging
 import matplotlib.pyplot as plt
-import numpy as np
-import pandas as pd
 import pickle as pkl
-from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler
 import torch
 import torch.utils.data as utils
 
-import os
 import sys
+import os
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/..")
 
 from common.argparser import autoencoder_argparse
-from common.utility import log_shapes, log_time, torch_device,\
-    time_stp, load_processed_data, logger, sep
+from common.utility import log_time, torch_device,\
+    time_stp, logger, sep
 from common.torchsummary import summary
 
-from models.autoencoder_basic import AutoEncoder
+from preprocessing import get_data
+
+from models.autoencoder import AutoEncoderBasic
 
 
 def main(
@@ -37,55 +35,20 @@ def main(
 
     device = torch_device(device=device)
 
-    # refer to PrivacyGAN_Titanic for data preparation
-    X, y_ally, y_advr = load_processed_data(expt)
-    log_shapes(
-        [X, y_ally, y_advr],
-        locals(),
-        'Dataset loaded'
-    )
-
-    X_train, X_valid, \
+    X_normalized_train, X_normalized_valid,\
         y_ally_train, y_ally_valid, \
-        y_advr_train, y_advr_valid = train_test_split(
-            X,
-            y_ally,
-            y_advr,
-            test_size=test_size,
-            stratify=pd.DataFrame(np.concatenate(
-                (
-                    y_ally.reshape(-1, ally_classes),
-                    y_advr.reshape(-1, advr_classes),
-                ), axis=1)
-            )
-        )
+        y_advr_train, y_advr_valid, = get_data(expt, test_size)
 
-    log_shapes(
-        [
-            X_train, X_valid,
-            y_ally_train, y_ally_valid,
-            y_advr_train, y_advr_valid
-        ],
-        locals(),
-        'Data size after train test split'
-    )
-
-    scaler = StandardScaler()
-    X_train_normalized = scaler.fit_transform(X_train)
-    X_valid_normalized = scaler.transform(X_valid)
-
-    log_shapes([X_train_normalized, X_valid_normalized], locals())
-
-    dataset_train = utils.TensorDataset(torch.Tensor(X_train_normalized))
+    dataset_train = utils.TensorDataset(torch.Tensor(X_normalized_train))
     dataloader_train = torch.utils.data.DataLoader(
         dataset_train, batch_size=batch_size, shuffle=shuffle, num_workers=2)
 
-    dataset_valid = utils.TensorDataset(torch.Tensor(X_valid_normalized))
+    dataset_valid = utils.TensorDataset(torch.Tensor(X_normalized_valid))
     dataloader_valid = torch.utils.data.DataLoader(
         dataset_valid, batch_size=batch_size, shuffle=False, num_workers=2)
 
-    auto_encoder = AutoEncoder(
-        input_size=X_train_normalized.shape[1],
+    auto_encoder = AutoEncoderBasic(
+        input_size=X_normalized_train.shape[1],
         encoding_dim=encoding_dim
     ).to(device)
 
@@ -93,7 +56,7 @@ def main(
     adam_optim = torch.optim.Adam
     optimizer = adam_optim(auto_encoder.parameters(), lr=lr)
 
-    summary(auto_encoder, input_size=(1, X_train_normalized.shape[1]))
+    summary(auto_encoder, input_size=(1, X_normalized_valid.shape[1]))
 
     h_epoch = []
     h_valid = []
@@ -177,11 +140,12 @@ def main(
 
 
 if __name__ == "__main__":
-    expt = 'titanic'
+    expt = 'mnist'
     model = 'autoencoder_basic'
+    marker = 'A'
     pr_time, fl_time = time_stp()
 
-    logger(expt, model, fl_time)
+    logger(expt, model, fl_time, marker)
 
     log_time('Start', pr_time)
     args = autoencoder_argparse()
@@ -189,14 +153,14 @@ if __name__ == "__main__":
         model=model,
         time_stamp=fl_time,
         device=args['device'],
-        ally_classes=int(args['n_ally']),
-        advr_classes=int(args['n_advr']),
-        encoding_dim=int(args['dim']),
-        test_size=float(args['test_size']),
-        batch_size=int(args['batch_size']),
-        n_epochs=int(args['n_epochs']),
-        shuffle=int(args['shuffle']) == 1,
-        lr=float(args['lr']),
+        ally_classes=args['n_ally'],
+        advr_classes=args['n_advr'],
+        encoding_dim=args['dim'],
+        test_size=args['test_size'],
+        batch_size=args['batch_size'],
+        n_epochs=args['n_epochs'],
+        shuffle=args['shuffle'] == 1,
+        lr=args['lr'],
         expt=args['expt'],
     )
     log_time('End', time_stp()[0])
