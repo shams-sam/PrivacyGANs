@@ -8,8 +8,8 @@ from sklearn.preprocessing import StandardScaler
 import torch
 import torch.utils.data as utils
 
-import sys
 import os
+import sys
 sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/..")
 
 from common.argparser import autoencoder_argparse
@@ -17,7 +17,7 @@ from common.utility import log_shapes, log_time, torch_device,\
     time_stp, load_processed_data, logger, sep
 from common.torchsummary import summary
 
-from models.autoencoder_basic import AutoEncoder
+from models.autoencoder import AutoEncoderBasic
 
 
 def main(
@@ -25,7 +25,8 @@ def main(
         time_stamp,
         device,
         ally_classes,
-        advr_classes,
+        advr_1_classes,
+        advr_2_classes,
         encoding_dim,
         test_size,
         batch_size,
@@ -38,24 +39,22 @@ def main(
     device = torch_device(device=device)
 
     # refer to PrivacyGAN_Titanic for data preparation
-    X, y_ally, y_advr = load_processed_data(expt)
+    X, y_ally, y_advr_1, y_advr_2 = load_processed_data(
+        expt, 'processed_data_X_y_ally_y_advr_y_advr_2.pkl')
     log_shapes(
-        [X, y_ally, y_advr],
+        [X, y_ally, y_advr_1, y_advr_2],
         locals(),
         'Dataset loaded'
     )
 
-    X_train, X_valid, \
-        y_ally_train, y_ally_valid, \
-        y_advr_train, y_advr_valid = train_test_split(
+    X_train, X_valid = train_test_split(
             X,
-            y_ally,
-            y_advr,
             test_size=test_size,
             stratify=pd.DataFrame(np.concatenate(
                 (
                     y_ally.reshape(-1, ally_classes),
-                    y_advr.reshape(-1, advr_classes),
+                    y_advr_1.reshape(-1, advr_1_classes),
+                    y_advr_2.reshape(-1, advr_2_classes),
                 ), axis=1)
             )
         )
@@ -63,8 +62,6 @@ def main(
     log_shapes(
         [
             X_train, X_valid,
-            y_ally_train, y_ally_valid,
-            y_advr_train, y_advr_valid
         ],
         locals(),
         'Data size after train test split'
@@ -84,7 +81,7 @@ def main(
     dataloader_valid = torch.utils.data.DataLoader(
         dataset_valid, batch_size=batch_size, shuffle=False, num_workers=2)
 
-    auto_encoder = AutoEncoder(
+    auto_encoder = AutoEncoderBasic(
         input_size=X_train_normalized.shape[1],
         encoding_dim=encoding_dim
     ).to(device)
@@ -179,9 +176,10 @@ def main(
 if __name__ == "__main__":
     expt = 'mimic'
     model = 'autoencoder_basic'
+    marker = 'A'
     pr_time, fl_time = time_stp()
 
-    logger(expt, model, fl_time)
+    logger(expt, model, fl_time, 'A')
 
     log_time('Start', pr_time)
     args = autoencoder_argparse()
@@ -189,14 +187,15 @@ if __name__ == "__main__":
         model=model,
         time_stamp=fl_time,
         device=args['device'],
-        ally_classes=args['n_ally'],
-        advr_classes=args['n_advr'],
-        encoding_dim=args['dim'],
-        test_size=args['test_size'],
-        batch_size=args['batch_size'],
-        n_epochs=args['n_epochs'],
-        shuffle=args['shuffle'] == 1,
-        lr=args['lr'],
+        ally_classes=int(args['n_ally']),
+        advr_1_classes=int(args['n_advr_1']),
+        advr_2_classes=int(args['n_advr_2']),
+        encoding_dim=int(args['dim']),
+        test_size=float(args['test_size']),
+        batch_size=int(args['batch_size']),
+        n_epochs=int(args['n_epochs']),
+        shuffle=int(args['shuffle']) == 1,
+        lr=float(args['lr']),
         expt=args['expt'],
     )
     log_time('End', time_stp()[0])

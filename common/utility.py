@@ -96,3 +96,8 @@ def weights_init(m):
     elif classname.find('BatchNorm') != -1:
         m.weight.data.normal_(1.0, 0.02)
         m.bias.data.fill_(0)
+
+
+def laplaceMechanism(x, epsilon, device):
+    x += torch.Tensor(np.random.laplace(0, 1.0/epsilon, x.shape)).to(device)
+    return x

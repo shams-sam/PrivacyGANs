@@ -30,13 +30,14 @@ class GeneratorCNN(nn.Module):
 class GeneratorFCN(torch.nn.Module):
     def __init__(
         self, input_size, hidden_size, output_size,
-        leaky=False, activation='sigmoid'
+        leaky=False, activation='sigmoid', dropout=0.5
     ):
         super(GeneratorFCN, self).__init__()
         self.input_size = input_size
         self.hidden_size = hidden_size
         self.output_size = output_size
         self.leaky = leaky
+        self.dropout = dropout
         self.activation = activation
         self.fc1 = torch.nn.Linear(self.input_size, self.hidden_size)
         self.relu = torch.nn.ReLU()
@@ -44,6 +45,7 @@ class GeneratorFCN(torch.nn.Module):
         self.fc2 = torch.nn.Linear(self.hidden_size, self.output_size)
         self.sigmoid = torch.nn.Sigmoid()
         self.tanh = torch.nn.Tanh()
+        self.dropout = torch.nn.Dropout(p=self.dropout)
 
     def forward(self, x):
         hidden = self.fc1(x)
@@ -51,6 +53,7 @@ class GeneratorFCN(torch.nn.Module):
             relu = self.leaky_relu(hidden)
         else:
             relu = self.relu(hidden)
+        # relu = self.dropout(relu)
         output = self.fc2(relu)
         if self.activation == 'sigmoid':
             output = self.sigmoid(output)
@@ -63,13 +66,14 @@ class GeneratorFCN(torch.nn.Module):
 class DiscriminatorFCN(torch.nn.Module):
     def __init__(
         self, input_size, hidden_size, output_size,
-        leaky=False, activation='sigmoid'
+        leaky=False, activation='sigmoid', dropout=0.5
     ):
         super(DiscriminatorFCN, self).__init__()
         self.input_size = input_size
         self.hidden_size = hidden_size
         self.output_size = output_size
         self.leaky = leaky
+        self.dropout = dropout
         self.activation = activation
         self.fc1 = torch.nn.Linear(self.input_size, self.hidden_size)
         self.relu = torch.nn.ReLU()
@@ -77,6 +81,7 @@ class DiscriminatorFCN(torch.nn.Module):
         self.fc2 = torch.nn.Linear(self.hidden_size, self.output_size)
         self.sigmoid = torch.nn.Sigmoid()
         self.tanh = torch.nn.Tanh()
+        self.dropout = torch.nn.Dropout(p=self.dropout)
 
     def forward(self, x):
         hidden = self.fc1(x)
@@ -84,6 +89,7 @@ class DiscriminatorFCN(torch.nn.Module):
             relu = self.leaky_relu(hidden)
         else:
             relu = self.relu(hidden)
+        # relu = self.dropout(relu)
         output = self.fc2(relu)
         if self.activation == 'sigmoid':
             output = self.sigmoid(output)

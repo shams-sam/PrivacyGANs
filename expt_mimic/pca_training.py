@@ -13,37 +13,36 @@ from common.argparser import pca_argparse
 from common.utility import log_shapes, log_time, sep, \
     time_stp, load_processed_data, logger
 
-from models.pca_basic import PCABasic
+from models.pca import PCABasic
 
 
 def main(
         model,
         time_stamp,
         ally_classes,
-        advr_classes,
+        advr_1_classes,
+        advr_2_classes,
         test_size,
         expl_var,
         expt,
         ):
 
-    X, y_ally, y_advr = load_processed_data(expt)
+    X, y_ally, y_advr_1, y_advr_2 = load_processed_data(
+        expt, 'processed_data_X_y_ally_y_advr_y_advr_2.pkl')
     log_shapes(
-        [X, y_ally, y_advr],
+        [X, y_ally, y_advr_1, y_advr_2],
         locals(),
         'Dataset loaded'
     )
 
-    X_train, X_valid, \
-        y_ally_train, y_ally_valid, \
-        y_advr_train, y_advr_valid = train_test_split(
+    X_train, X_valid = train_test_split(
             X,
-            y_ally,
-            y_advr,
             test_size=test_size,
             stratify=pd.DataFrame(np.concatenate(
                 (
                     y_ally.reshape(-1, ally_classes),
-                    y_advr.reshape(-1, advr_classes),
+                    y_advr_1.reshape(-1, advr_1_classes),
+                    y_advr_2.reshape(-1, advr_2_classes),
                 ), axis=1)
             )
         )
@@ -51,8 +50,6 @@ def main(
     log_shapes(
         [
             X_train, X_valid,
-            y_ally_train, y_ally_valid,
-            y_advr_train, y_advr_valid
         ],
         locals(),
         'Data size after train test split'
@@ -86,9 +83,10 @@ def main(
 if __name__ == "__main__":
     expt = 'mimic'
     model = 'pca_basic'
+    marker = 'A'
     pr_time, fl_time = time_stp()
 
-    logger(expt, model, fl_time)
+    logger(expt, model, fl_time, marker)
 
     log_time('Start', pr_time)
     args = pca_argparse()
@@ -96,7 +94,8 @@ if __name__ == "__main__":
         model='pca_basic',
         time_stamp=fl_time,
         ally_classes=args['n_ally'],
-        advr_classes=args['n_advr'],
+        advr_1_classes=args['n_advr_1'],
+        advr_2_classes=args['n_advr_2'],
         test_size=args['test_size'],
         expl_var=args['expl_var'],
         expt=args['expt'],

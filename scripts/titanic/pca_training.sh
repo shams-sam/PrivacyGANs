@@ -1,0 +1,1 @@
+python expt_titanic/pca_training.py --n-ally 1 --n-advr-1 1 --n-advr-2 3 --test-size 0.1 --expl-var 0.99 --expt titanic

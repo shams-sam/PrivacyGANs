@@ -16,7 +16,11 @@ def autoencoder_argparse(debug=True):
                     help="gpu/cpu")
     ap.add_argument("--n-ally", type=int, required=True,
                     help="number of ally classes")
-    ap.add_argument("--n-advr", type=int, required=True,
+    ap.add_argument("--n-advr", type=int, required=False,
+                    help="number of advr classes")
+    ap.add_argument("--n-advr-1", type=int, required=False,
+                    help="number of advr classes")
+    ap.add_argument("--n-advr-2", type=int, required=False,
                     help="number of advr classes")
     ap.add_argument("--dim", type=int, required=True,
                     help="encoding dimension")
@@ -49,7 +53,11 @@ def comparison_argparse(debug=True):
                     help="gpu/cpu")
     ap.add_argument("--n-ally", type=int, required=True,
                     help="number of ally classes")
-    ap.add_argument("--n-advr", type=int, required=True,
+    ap.add_argument("--n-advr", type=int, required=False,
+                    help="number of advr classes")
+    ap.add_argument("--n-advr-1", type=int, required=False,
+                    help="number of advr classes")
+    ap.add_argument("--n-advr-2", type=int, required=False,
                     help="number of advr classes")
     ap.add_argument("--dim", type=int, required=True,
                     help="encoding dimension")
@@ -57,6 +65,8 @@ def comparison_argparse(debug=True):
                     help="hidden layer dimension")
     ap.add_argument("--leaky", type=int, required=True,
                     help="leaky relu or not")
+    ap.add_argument("--epsilon", type=float, required=False,
+                    help="epsilon value")
     ap.add_argument("--test-size", type=float, required=True,
                     help="size of test set")
     ap.add_argument("--batch-size", type=int, required=True,
@@ -67,15 +77,19 @@ def comparison_argparse(debug=True):
                     help="to shuffle or not")
     ap.add_argument("--lr-ally", type=float, required=True,
                     help="learning rate for ally")
-    ap.add_argument("--lr-advr", type=float, required=True,
+    ap.add_argument("--lr-advr", type=float, required=False,
+                    help="learning rate for advr")
+    ap.add_argument("--lr-advr-1", type=float, required=False,
+                    help="learning rate for advr")
+    ap.add_argument("--lr-advr-2", type=float, required=False,
                     help="learning rate for advr")
     ap.add_argument("--expt", required=True,
                     help="experiment/dataset name")
-    ap.add_argument("--pca-ckpt", required=True,
+    ap.add_argument("--pca-ckpt", required=False,
                     help="pca checkpoint")
-    ap.add_argument("--autoencoder-ckpt", required=True,
+    ap.add_argument("--autoencoder-ckpt", required=False,
                     help="autoencoder checkpoint")
-    ap.add_argument("--encoder-ckpt", required=True,
+    ap.add_argument("--encoder-ckpt", required=False,
                     help="encoder checkpoint")
 
     args = vars(ap.parse_args())
@@ -96,7 +110,11 @@ def eigan_argparse(debug=True):
                     help="number of gpus")
     ap.add_argument("--n-ally", type=int, required=True,
                     help="number of ally classes")
-    ap.add_argument("--n-advr", type=int, required=True,
+    ap.add_argument("--n-advr", type=int, required=False,
+                    help="number of advr classes")
+    ap.add_argument("--n-advr-1", type=int, required=False,
+                    help="number of advr classes")
+    ap.add_argument("--n-advr-2", type=int, required=False,
                     help="number of advr classes")
     ap.add_argument("--n-channels", type=int, required=False,
                     help="number of input channels")
@@ -124,7 +142,11 @@ def eigan_argparse(debug=True):
                     help="learning rate for encoder")
     ap.add_argument("--lr-ally", type=float, required=True,
                     help="learning rate for ally")
-    ap.add_argument("--lr-advr", type=float, required=True,
+    ap.add_argument("--lr-advr", type=float, required=False,
+                    help="learning rate for advr")
+    ap.add_argument("--lr-advr-1", type=float, required=False,
+                    help="learning rate for advr")
+    ap.add_argument("--lr-advr-2", type=float, required=False,
                     help="learning rate for advr")
     ap.add_argument("--alpha", type=float, required=True,
                     help="trade off between privacy and prediction")
@@ -149,7 +171,11 @@ def pca_argparse(debug=True):
 
     ap.add_argument("--n-ally", type=int, required=True,
                     help="number of ally classes")
-    ap.add_argument("--n-advr", type=int, required=True,
+    ap.add_argument("--n-advr", type=int, required=False,
+                    help="number of advr classes")
+    ap.add_argument("--n-advr-1", type=int, required=False,
+                    help="number of advr classes")
+    ap.add_argument("--n-advr-2", type=int, required=False,
                     help="number of advr classes")
     ap.add_argument("--test-size", type=float, required=True,
                     help="size of test set")

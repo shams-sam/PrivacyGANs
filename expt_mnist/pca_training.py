@@ -26,10 +26,11 @@ def main(
 
     X_normalized_train, X_normalized_valid,\
         y_ally_train, y_ally_valid, \
-        y_advr_train, y_advr_valid, = get_data(expt, test_size)
+        y_advr_1_train, y_advr_1_valid, \
+        y_advr_2_train, y_advr_2_valid = get_data(expt, test_size)
 
     pca = PCABasic(expl_var)
-    X_train_pca = pca.train(X_normalized_train, 332)
+    X_train_pca = pca.train(X_normalized_train)
     X_valid_pca = pca.eval(X_normalized_valid)
 
     sep()

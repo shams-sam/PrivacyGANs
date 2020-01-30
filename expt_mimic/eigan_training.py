@@ -3,6 +3,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import pickle as pkl
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
 import torch
 import torch.nn as nn
 import torch.utils.data as utils
@@ -13,10 +15,8 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)) + "/..")
 
 from common.argparser import eigan_argparse
 from common.utility import log_shapes, log_time, torch_device,\
-    time_stp, load_processed_data, logger, sep, to_categorical, weights_init
+    time_stp, load_processed_data, logger, sep, weights_init
 from common.torchsummary import summary
-
-from preprocessing import get_data
 
 from models.eigan import GeneratorFCN, DiscriminatorFCN
 
@@ -51,10 +51,48 @@ def main(
 
     device = torch_device(device=device)
 
-    X_normalized_train, X_normalized_valid,\
+    X, y_ally, y_advr_1, y_advr_2 = load_processed_data(
+        expt, 'processed_data_X_y_ally_y_advr_y_advr_2.pkl')
+    log_shapes(
+        [X, y_ally, y_advr_1, y_advr_2],
+        locals(),
+        'Dataset loaded'
+    )
+
+    X_train, X_valid, \
         y_ally_train, y_ally_valid, \
         y_advr_1_train, y_advr_1_valid, \
-        y_advr_2_train, y_advr_2_valid = get_data(expt, test_size)
+        y_advr_2_train, y_advr_2_valid = train_test_split(
+            X,
+            y_ally,
+            y_advr_1,
+            y_advr_2,
+            test_size=test_size,
+            stratify=pd.DataFrame(np.concatenate(
+                (
+                    y_ally.reshape(-1, ally_classes),
+                    y_advr_1.reshape(-1, advr_1_classes),
+                    y_advr_2.reshape(-1, advr_2_classes),
+                ), axis=1)
+            )
+        )
+
+    log_shapes(
+        [
+            X_train, X_valid,
+            y_ally_train, y_ally_valid,
+            y_advr_1_train, y_advr_1_valid,
+            y_advr_2_train, y_advr_2_valid,
+        ],
+        locals(),
+        'Data size after train test split'
+    )
+
+    scaler = StandardScaler()
+    X_normalized_train = scaler.fit_transform(X_train)
+    X_normalized_valid = scaler.transform(X_valid)
+
+    log_shapes([X_normalized_train, X_normalized_valid], locals())
 
     encoder = GeneratorFCN(
         X_normalized_train.shape[1], hidden_dim, encoding_dim,
@@ -88,34 +126,17 @@ def main(
 
     optim = torch.optim.Adam
     criterionBCEWithLogits = nn.BCEWithLogitsLoss()
-    criterionCrossEntropy = nn.CrossEntropyLoss()
 
-    optimizer_encd = optim(
-        encoder.parameters(),
-        lr=lr_encd,
-        weight_decay=lr_encd
-    )
-    optimizer_ally = optim(
-        ally.parameters(),
-        lr=lr_ally,
-        weight_decay=lr_ally
-    )
-    optimizer_advr_1 = optim(
-        advr_1.parameters(),
-        lr=lr_advr_1,
-        weight_decay=lr_advr_1
-    )
-    optimizer_advr_2 = optim(
-        advr_2.parameters(),
-        lr=lr_advr_2,
-        weight_decay=lr_advr_2
-    )
+    optimizer_encd = optim(encoder.parameters(), lr=lr_encd)
+    optimizer_ally = optim(ally.parameters(), lr=lr_ally)
+    optimizer_advr_1 = optim(advr_1.parameters(), lr=lr_advr_1)
+    optimizer_advr_2 = optim(advr_2.parameters(), lr=lr_advr_2)
 
     dataset_train = utils.TensorDataset(
         torch.Tensor(X_normalized_train),
-        torch.Tensor(y_ally_train),
-        torch.Tensor(y_advr_1_train),
-        torch.Tensor(y_advr_2_train),
+        torch.Tensor(y_ally_train.reshape(-1, ally_classes)),
+        torch.Tensor(y_advr_1_train.reshape(-1, advr_1_classes)),
+        torch.Tensor(y_advr_2_train.reshape(-1, advr_2_classes)),
     )
 
     dataloader_train = torch.utils.data.DataLoader(
@@ -127,9 +148,9 @@ def main(
 
     dataset_valid = utils.TensorDataset(
         torch.Tensor(X_normalized_valid),
-        torch.Tensor(y_ally_valid),
-        torch.Tensor(y_advr_1_valid),
-        torch.Tensor(y_advr_2_valid)
+        torch.Tensor(y_ally_valid.reshape(-1, ally_classes)),
+        torch.Tensor(y_advr_1_valid.reshape(-1, advr_1_classes)),
+        torch.Tensor(y_advr_2_valid.reshape(-1, advr_2_classes)),
     )
 
     dataloader_valid = torch.utils.data.DataLoader(
@@ -167,7 +188,7 @@ def main(
         encoder.train()
         ally.eval()
         advr_1.eval()
-        advr_1.eval()
+        advr_2.eval()
 
         for __ in range(g_reps):
             nsamples = 0
@@ -187,9 +208,9 @@ def main(
                 # Compute Loss
                 loss_ally = criterionBCEWithLogits(
                     y_ally_train_hat_torch, y_ally_train_torch)
-                loss_advr_1 = criterionCrossEntropy(
+                loss_advr_1 = criterionBCEWithLogits(
                     y_advr_1_train_hat_torch,
-                    torch.argmax(y_advr_1_train_torch, 1))
+                    y_advr_1_train_torch)
                 loss_advr_2 = criterionBCEWithLogits(
                     y_advr_2_train_hat_torch,
                     y_advr_2_train_torch)
@@ -231,9 +252,9 @@ def main(
                 optimizer_advr_1.zero_grad()
                 X_train_encoded = encoder(X_train_torch)
                 y_advr_1_train_hat_torch = advr_1(X_train_encoded)
-                loss_advr_1 = criterionCrossEntropy(
+                loss_advr_1 = criterionBCEWithLogits(
                     y_advr_1_train_hat_torch,
-                    torch.argmax(y_advr_1_train_torch, 1))
+                    y_advr_1_train_torch)
                 loss_advr_1.backward()
                 optimizer_advr_1.step()
 
@@ -282,13 +303,12 @@ def main(
 
             valid_loss_ally = criterionBCEWithLogits(
                 y_ally_valid_hat_torch, y_ally_valid_torch)
-            valid_loss_advr_1 = criterionCrossEntropy(
-                y_advr_1_valid_hat_torch,
-                torch.argmax(y_advr_1_valid_torch, 1))
+            valid_loss_advr_1 = criterionBCEWithLogits(
+                y_advr_1_valid_hat_torch, y_advr_1_valid_torch)
             valid_loss_advr_2 = criterionBCEWithLogits(
                 y_advr_2_valid_hat_torch, y_advr_2_valid_torch)
-            valid_loss_encd = valid_loss_ally - \
-                valid_loss_advr_1 - valid_loss_advr_2
+            valid_loss_encd = valid_loss_ally - valid_loss_advr_1 - \
+                valid_loss_advr_2
 
             nsamples += 1
             iloss += valid_loss_encd.item()
@@ -316,7 +336,7 @@ def main(
                 advr_2_loss_valid[-1],
             ))
 
-    config_summary = '{}_device_{}_dim_{}_hidden_{}_batch_{}_epochs_{}_lrencd_{}_lrally_{}_lradvr_{}_tr_{:.4f}_val_{:.4f}'\
+    config_summary = '{}_device_{}_dim_{}_hidden_{}_batch_{}_epochs_{}_lrencd_{}_lrally_{}_tr_{:.4f}_val_{:.4f}'\
         .format(
             marker,
             device,
@@ -326,7 +346,6 @@ def main(
             n_epochs,
             lr_encd,
             lr_ally,
-            lr_advr_1,
             encd_loss_train[-1],
             advr_1_loss_valid[-1],
         )
@@ -343,9 +362,9 @@ def main(
         'encoder train', 'encoder valid',
         'ally train', 'ally valid',
         'advr 1 train', 'advr 1 valid',
-        'advr 2 train', 'advr 2 valid'
+        'advr 2 train', 'advr 2 valid',
     ])
-    plt.title("{} on {} training {}".format(model, expt, config_summary))
+    plt.title("{} on {} training".format(model, expt))
 
     plot_location = 'plots/{}/{}_training_{}_{}.png'.format(
         expt, model, time_stamp, config_summary)
@@ -371,9 +390,9 @@ def main(
 
 
 if __name__ == "__main__":
-    expt = 'mnist'
+    expt = 'mimic'
     model = 'eigan'
-    marker = 'A'
+    marker = 'E'
     pr_time, fl_time = time_stp()
 
     logger(expt, model, fl_time, marker)

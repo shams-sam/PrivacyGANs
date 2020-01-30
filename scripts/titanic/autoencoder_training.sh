@@ -1,0 +1,1 @@
+python expt_titanic/autoencoder_training.py --device gpu --n-ally 1 --n-advr-1 1 --n-advr-2 3 --dim 588 --test-size 0.1 --batch-size 1024 --n-epochs 1001 --shuffle 1 --lr 0.0001 --expt titanic

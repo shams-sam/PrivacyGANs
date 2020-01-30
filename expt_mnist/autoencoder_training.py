@@ -37,7 +37,8 @@ def main(
 
     X_normalized_train, X_normalized_valid,\
         y_ally_train, y_ally_valid, \
-        y_advr_train, y_advr_valid, = get_data(expt, test_size)
+        y_advr_1_train, y_advr_1_valid, \
+        y_advr_2_train, y_advr_2_valid = get_data(expt, test_size)
 
     dataset_train = utils.TensorDataset(torch.Tensor(X_normalized_train))
     dataloader_train = torch.utils.data.DataLoader(

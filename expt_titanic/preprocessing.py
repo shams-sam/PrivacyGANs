@@ -12,30 +12,27 @@ from common.utility import log_shapes, load_processed_data, to_categorical
 
 def get_data(expt, test_size):
 
-    X, y_ally, y_advr_1, y_advr_2 = load_processed_data(
-        expt,
-        'processed_data_X_y_ally_y_advr_y_advr_2.pkl'
-    )
+    X, y = load_processed_data(expt, 'processed_data_X_y.pkl')
     log_shapes(
-        [X, y_ally, y_advr_1, y_advr_2],
+        [X, y],
         locals(),
         'Dataset loaded'
     )
 
+    y_ally = y % 2
+    y_advr = y
+
     X_train, X_valid, \
         y_ally_train, y_ally_valid, \
-        y_advr_1_train, y_advr_1_valid, \
-        y_advr_2_train, y_advr_2_valid = train_test_split(
+        y_advr_train, y_advr_valid = train_test_split(
             X,
             y_ally,
-            y_advr_1,
-            y_advr_2,
+            y_advr,
             test_size=test_size,
             stratify=pd.DataFrame(np.concatenate(
                 (
                     y_ally.reshape(-1, 1),
-                    y_advr_1.reshape(-1, 1),
-                    y_advr_2.reshape(-1, 1),
+                    y_advr.reshape(-1, 1),
                 ), axis=1)
             )
         )
@@ -47,17 +44,14 @@ def get_data(expt, test_size):
 
     y_ally_train = y_ally_train.reshape(-1, 1)
     y_ally_valid = y_ally_valid.reshape(-1, 1)
-    y_advr_1_train = to_categorical(y_advr_1_train)
-    y_advr_1_valid = to_categorical(y_advr_1_valid)
-    y_advr_2_train = y_advr_2_train.reshape(-1, 1)
-    y_advr_2_valid = y_advr_2_valid.reshape(-1, 1)
+    y_advr_train = to_categorical(y_advr_train)
+    y_advr_valid = to_categorical(y_advr_valid)
 
     log_shapes(
         [
             X_normalized_train, X_normalized_valid,
             y_ally_train, y_ally_valid,
-            y_advr_1_train, y_advr_1_valid,
-            y_advr_2_train, y_advr_2_valid,
+            y_advr_train, y_advr_valid
         ],
         locals(),
         'Data size after train test split'
@@ -66,6 +60,5 @@ def get_data(expt, test_size):
     return (
         X_normalized_train, X_normalized_valid,
         y_ally_train, y_ally_valid,
-        y_advr_1_train, y_advr_1_valid,
-        y_advr_2_train, y_advr_2_valid,
+        y_advr_train, y_advr_valid,
     )
