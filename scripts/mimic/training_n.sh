@@ -1,0 +1,1 @@
+python expt_mimic/training_n.py --device gpu --dim 27 --hidden-dim 128 --leaky 0 --test-size 0.3 --batch-size 16384 --n-epochs 1001 --shuffle 0 --lr 0.00001 --expt mimic

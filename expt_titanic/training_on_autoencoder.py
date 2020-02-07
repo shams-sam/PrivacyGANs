@@ -168,124 +168,72 @@ def main(
         optimizer_advr_1 = optim(advr_1.parameters(), lr=lr_advr_1)
         optimizer_advr_2 = optim(advr_2.parameters(), lr=lr_advr_2)
 
-        # sep("ally")
-        # logging.info('{} \t {} \t {}'.format(
-        #     'Epoch',
-        #     'Ally Train',
-        #     'Ally Valid',
-        #     ))
 
-        # for epoch in range(n_epochs):
-        #     ally.train()
+        # adversary 1
+        sep("adversary 1")
+        logging.info('{} \t {} \t {}'.format(
+            'Epoch',
+            'Advr 1 Train',
+            'Advr 1 Valid',
+            ))
 
-        #     nsamples = 0
-        #     iloss_ally = 0
-        #     for i, data in enumerate(dataloader_train, 0):
-        #         X_train_torch = transform(data[0].to(device))
-        #         y_ally_train_torch = data[1].to(device)
+        for epoch in range(n_epochs):
+            advr_1.train()
 
-        #         optimizer_ally.zero_grad()
-        #         y_ally_train_hat_torch = ally(X_train_torch)
-        #         loss_ally = criterionBCEWithLogits(
-        #             y_ally_train_hat_torch, y_ally_train_torch)
-        #         loss_ally.backward()
-        #         optimizer_ally.step()
+            nsamples = 0
+            iloss_advr = 0
+            for i, data in enumerate(dataloader_train, 0):
+                X_train_torch = transform(data[0].to(device))
+                y_advr_train_torch = data[2].to(device)
 
-        #         nsamples += 1
-        #         iloss_ally += loss_ally.item()
-        #     if epoch not in h['epoch']['train']:
-        #         h['epoch']['train'].append(epoch)
-        #     h[_]['ally_train'].append(iloss_ally/nsamples)
+                optimizer_advr_1.zero_grad()
+                y_advr_train_hat_torch = advr_1(X_train_torch)
 
-        #     if epoch % int(n_epochs/10) != 0:
-        #         continue
+                loss_advr = criterionBCEWithLogits(
+                    y_advr_train_hat_torch, y_advr_train_torch)
+                loss_advr.backward()
+                optimizer_advr_1.step()
 
-        #     ally.eval()
+                nsamples += 1
+                iloss_advr += loss_advr.item()
 
-        #     nsamples = 0
-        #     iloss_ally = 0
+            h[_]['advr_1_train'].append(iloss_advr/nsamples)
 
-        #     for i, data in enumerate(dataloader_valid, 0):
-        #         X_valid_torch = transform(data[0].to(device))
-        #         y_ally_valid_torch = data[1].to(device)
-        #         y_ally_valid_hat_torch = ally(X_valid_torch)
+            if epoch % int(n_epochs/10) != 0:
+                continue
 
-        #         valid_loss_ally = criterionBCEWithLogits(
-        #             y_ally_valid_hat_torch, y_ally_valid_torch)
+            advr_1.eval()
 
-        #         nsamples += 1
-        #         iloss_ally += valid_loss_ally.item()
+            nsamples = 0
+            iloss_advr = 0
+            correct = 0
+            total = 0
 
-        #     if epoch not in h['epoch']['valid']:
-        #         h['epoch']['valid'].append(epoch)
-        #     h[_]['ally_valid'].append(iloss_ally/nsamples)
+            for i, data in enumerate(dataloader_valid, 0):
+                X_valid_torch = transform(data[0].to(device))
+                y_advr_valid_torch = data[2].to(device)
+                y_advr_valid_hat_torch = advr_1(X_valid_torch)
 
-        #     logging.info(
-        #         '{} \t {:.8f} \t {:.8f}'.
-        #         format(
-        #             epoch,
-        #             h[_]['ally_train'][-1],
-        #             h[_]['ally_valid'][-1],
-        #         ))
+                valid_loss_advr = criterionBCEWithLogits(
+                    y_advr_valid_hat_torch, y_advr_valid_torch,)
 
-        # # adversary 1
-        # sep("adversary 1")
-        # logging.info('{} \t {} \t {}'.format(
-        #     'Epoch',
-        #     'Advr 1 Train',
-        #     'Advr 1 Valid',
-        #     ))
+                predicted = y_advr_valid_hat_torch > 0.5
 
-        # for epoch in range(n_epochs):
-        #     advr_1.train()
+                nsamples += 1
+                iloss_advr += valid_loss_advr.item()
+                total += y_advr_valid_torch.size(0)
+                correct += (predicted == y_advr_valid_torch).sum().item()
 
-        #     nsamples = 0
-        #     iloss_advr = 0
-        #     for i, data in enumerate(dataloader_train, 0):
-        #         X_train_torch = transform(data[0].to(device))
-        #         y_advr_train_torch = data[2].to(device)
+            h[_]['advr_1_valid'].append(iloss_advr/nsamples)
 
-        #         optimizer_advr_1.zero_grad()
-        #         y_advr_train_hat_torch = advr_1(X_train_torch)
-
-        #         loss_advr = criterionBCEWithLogits(
-        #             y_advr_train_hat_torch, y_advr_train_torch)
-        #         loss_advr.backward()
-        #         optimizer_advr_1.step()
-
-        #         nsamples += 1
-        #         iloss_advr += loss_advr.item()
-
-        #     h[_]['advr_1_train'].append(iloss_advr/nsamples)
-
-        #     if epoch % int(n_epochs/10) != 0:
-        #         continue
-
-        #     advr_1.eval()
-
-        #     nsamples = 0
-        #     iloss_advr = 0
-
-        #     for i, data in enumerate(dataloader_valid, 0):
-        #         X_valid_torch = transform(data[0].to(device))
-        #         y_advr_valid_torch = data[2].to(device)
-        #         y_advr_valid_hat_torch = advr_1(X_valid_torch)
-
-        #         valid_loss_advr = criterionBCEWithLogits(
-        #             y_advr_valid_hat_torch, y_advr_valid_torch,)
-
-        #         nsamples += 1
-        #         iloss_advr += valid_loss_advr.item()
-
-        #     h[_]['advr_1_valid'].append(iloss_advr/nsamples)
-
-        #     logging.info(
-        #         '{} \t {:.8f} \t {:.8f}'.
-        #         format(
-        #             epoch,
-        #             h[_]['advr_1_train'][-1],
-        #             h[_]['advr_1_valid'][-1],
-        #         ))
+            logging.info(
+                '{} \t {:.8f} \t {:.8f} \t {:.8f}'.
+                format(
+                    epoch,
+                    h[_]['advr_1_train'][-1],
+                    h[_]['advr_1_valid'][-1],
+                    correct/total
+                ))
 
         # adversary
         sep("adversary 2")
@@ -325,6 +273,8 @@ def main(
 
             nsamples = 0
             iloss_advr = 0
+            correct = 0
+            total = 0
 
             for i, data in enumerate(dataloader_valid, 0):
                 X_valid_torch = transform(data[0].to(device))
@@ -335,18 +285,92 @@ def main(
                     y_advr_valid_hat_torch,
                     torch.argmax(y_advr_valid_torch, 1))
 
+                tmp, predicted = torch.max(y_advr_valid_hat_torch, 1)
+                tmp, actual = torch.max(y_advr_valid_torch, 1) 
+
                 nsamples += 1
                 iloss_advr += valid_loss_advr.item()
+                total += actual.size(0)
+                correct += (predicted == actual).sum().item()
 
             h[_]['advr_2_valid'].append(iloss_advr/nsamples)
 
             logging.info(
-                '{} \t {:.8f} \t {:.8f}'.
+                '{} \t {:.8f} \t {:.8f} \t {:.8f}'.
                 format(
                     epoch,
                     h[_]['advr_2_train'][-1],
                     h[_]['advr_2_valid'][-1],
+                    correct/total
                 ))
+
+        sep("ally")
+        logging.info('{} \t {} \t {}'.format(
+            'Epoch',
+            'Ally Train',
+            'Ally Valid',
+            ))
+
+        for epoch in range(n_epochs):
+            ally.train()
+
+            nsamples = 0
+            iloss_ally = 0
+            for i, data in enumerate(dataloader_train, 0):
+                X_train_torch = transform(data[0].to(device))
+                y_ally_train_torch = data[1].to(device)
+
+                optimizer_ally.zero_grad()
+                y_ally_train_hat_torch = ally(X_train_torch)
+                loss_ally = criterionBCEWithLogits(
+                    y_ally_train_hat_torch, y_ally_train_torch)
+                loss_ally.backward()
+                optimizer_ally.step()
+
+                nsamples += 1
+                iloss_ally += loss_ally.item()
+            if epoch not in h['epoch']['train']:
+                h['epoch']['train'].append(epoch)
+            h[_]['ally_train'].append(iloss_ally/nsamples)
+
+            if epoch % int(n_epochs/10) != 0:
+                continue
+
+            ally.eval()
+
+            nsamples = 0
+            iloss_ally = 0
+            correct = 0
+            total = 0
+
+            for i, data in enumerate(dataloader_valid, 0):
+                X_valid_torch = transform(data[0].to(device))
+                y_ally_valid_torch = data[1].to(device)
+                y_ally_valid_hat_torch = ally(X_valid_torch)
+
+                valid_loss_ally = criterionBCEWithLogits(
+                    y_ally_valid_hat_torch, y_ally_valid_torch)
+
+                predicted = y_ally_valid_hat_torch > 0.5
+
+                nsamples += 1
+                iloss_ally += valid_loss_ally.item()
+                total += y_ally_valid_torch.size(0)
+                correct += (predicted == y_ally_valid_torch).sum().item()
+
+            if epoch not in h['epoch']['valid']:
+                h['epoch']['valid'].append(epoch)
+            h[_]['ally_valid'].append(iloss_ally/nsamples)
+
+            logging.info(
+                '{} \t {:.8f} \t {:.8f} \t {:.8f}'.
+                format(
+                    epoch,
+                    h[_]['ally_train'][-1],
+                    h[_]['ally_valid'][-1],
+                    correct/total
+                ))
+
 
     checkpoint_location = \
         'checkpoints/{}/{}_training_history_{}.pkl'.format(

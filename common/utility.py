@@ -65,6 +65,7 @@ def load_processed_data(expt, file='processed_data_X_y_ally_y_advr.pkl'):
 
 def logger(expt, model, time_stamp, marker):
     log_path = 'logs/{}/{}_{}_{}.log'.format(expt, model, time_stamp, marker)
+    print(log_path)
     logging.basicConfig(
         filename=log_path,
         filemode='w',

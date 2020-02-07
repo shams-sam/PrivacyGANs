@@ -1,1 +1,1 @@
-python expt_mimic/comparison.py
+python expt_mnist/comparison.py

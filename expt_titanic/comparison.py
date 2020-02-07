@@ -27,7 +27,7 @@ def main(expt, model):
     pca_2 = pkl.load(open('checkpoints/titanic/ind_pca_training_history_01_15_2020_23_45_00.pkl', 'rb'))
     auto_1 = pkl.load(open('checkpoints/titanic/ind_autoencoder_training_history_01_16_2020_03_53_53.pkl', 'rb'))
     auto_2 = pkl.load(open('checkpoints/titanic/ind_autoencoder_training_history_01_16_2020_04_30_49.pkl', 'rb'))
-    dp_1 = pkl.load(open('checkpoints/titanic/ind_dp_training_history_01_25_2020_05_14_21.pkl', 'rb'))
+    dp_1 = pkl.load(open('checkpoints/titanic/ind_dp_training_history_01_30_2020_14_11_06.pkl', 'rb'))
     gan_1 = pkl.load(open('checkpoints/titanic/ind_gan_training_history_01_16_2020_21_56_04.pkl', 'rb'))
 
     # checkpoints/titanic/ind_gan_training_history_01_16_2020_21_56_04.pkl
@@ -54,6 +54,8 @@ def main(expt, model):
     ax3.set_title(t3, y=-0.25)
     ax3.set_xlabel('iterations (scale adjusted)')
     ax3.set_ylabel('loss')
+    ax3.grid()
+    ax3.text(0.7,0.67, 'Lower is better')
 
     ax1.plot(pca_1['epoch']['valid'], gan_1['encoder']['advr_1_valid'], 'r--')
     ax1.plot(pca_1['epoch']['valid'], auto_1['autoencoder']['advr_1_valid'], 'b--')
@@ -68,6 +70,7 @@ def main(expt, model):
     ax1.set_title(t1, y=-0.25)
     ax1.set_xlabel('iterations (scale adjusted)')
     ax1.set_ylabel('loss')
+    ax1.grid()
 
     ax2.plot(pca_1['epoch']['valid'], gan_1['encoder']['advr_2_valid'], 'r--')
     ax2.plot(pca_1['epoch']['valid'], auto_2['autoencoder']['advr_2_valid'], 'b--')
@@ -82,6 +85,7 @@ def main(expt, model):
     ax2.set_title(t2, y=-0.25)
     ax2.set_xlabel('iterations (scale adjusted)')
     ax2.set_ylabel('loss')
+    ax2.grid()
 
     plot_location = 'plots/{}/{}_{}_.png'.format(expt, 'all', model)
     sep()

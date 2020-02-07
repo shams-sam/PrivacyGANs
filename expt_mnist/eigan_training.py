@@ -193,7 +193,7 @@ def main(
                 loss_advr_2 = criterionBCEWithLogits(
                     y_advr_2_train_hat_torch,
                     y_advr_2_train_torch)
-                loss_encd = loss_ally - loss_advr_1 - loss_advr_2
+                loss_encd = - loss_ally + loss_advr_1 - loss_advr_2
                 # Backward pass
                 loss_encd.backward()
                 optimizer_encd.step()
@@ -287,7 +287,7 @@ def main(
                 torch.argmax(y_advr_1_valid_torch, 1))
             valid_loss_advr_2 = criterionBCEWithLogits(
                 y_advr_2_valid_hat_torch, y_advr_2_valid_torch)
-            valid_loss_encd = valid_loss_ally - \
+            valid_loss_encd = - valid_loss_ally + \
                 valid_loss_advr_1 - valid_loss_advr_2
 
             nsamples += 1
