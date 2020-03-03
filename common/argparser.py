@@ -51,7 +51,7 @@ def comparison_argparse(debug=True):
 
     ap.add_argument("--device", required=True,
                     help="gpu/cpu")
-    ap.add_argument("--n-ally", type=int, required=True,
+    ap.add_argument("--n-ally", type=int, required=False,
                     help="number of ally classes")
     ap.add_argument("--n-advr", type=int, required=False,
                     help="number of advr classes")
@@ -75,7 +75,9 @@ def comparison_argparse(debug=True):
                     help="number of epochs")
     ap.add_argument("--shuffle", type=int, required=True,
                     help="to shuffle or not")
-    ap.add_argument("--lr-ally", type=float, required=True,
+    ap.add_argument("--lr", type=float, required=False,
+                    help="learning rate")
+    ap.add_argument("--lr-ally", type=float, required=False,
                     help="learning rate for ally")
     ap.add_argument("--lr-advr", type=float, required=False,
                     help="learning rate for advr")
@@ -150,10 +152,14 @@ def eigan_argparse(debug=True):
                     help="learning rate for advr")
     ap.add_argument("--alpha", type=float, required=True,
                     help="trade off between privacy and prediction")
-    ap.add_argument("--g-reps", type=int, required=True,
+    ap.add_argument("--g-reps", type=int, required=False,
                     help="generator reps")
-    ap.add_argument("--d-reps", type=int, required=True,
+    ap.add_argument("--d-reps", type=int, required=False,
                     help="discriminator reps")
+    ap.add_argument("--num-allies", type=int, required=False,
+                    help="number of allies")
+    ap.add_argument("--num-adversaries", type=int, required=False,
+                    help="number of adversaries")
     ap.add_argument("--expt", required=True,
                     help="experiment/dataset name")
 

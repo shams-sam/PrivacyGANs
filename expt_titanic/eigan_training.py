@@ -410,7 +410,7 @@ def main(
 if __name__ == "__main__":
     expt = 'titanic'
     model = 'eigan'
-    marker = 'E1_dropout'
+    marker = 'F1'
     pr_time, fl_time = time_stp()
 
     logger(expt, model, fl_time, marker)

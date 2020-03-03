@@ -1,0 +1,3 @@
+[submodule "expt_waymo/waymo-open-dataset"]
+	path = expt_waymo/waymo-open-dataset
+	url = https://github.com/shams-sam/waymo-open-dataset.git

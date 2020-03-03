@@ -1,0 +1,1 @@
+python expt_mimic/comparison_eigan_training.py

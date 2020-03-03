@@ -214,7 +214,7 @@ def main(
                 loss_advr_2 = criterionBCEWithLogits(
                     y_advr_2_train_hat_torch,
                     y_advr_2_train_torch)
-                loss_encd = loss_ally - loss_advr_1 - loss_advr_2
+                loss_encd = alpha*loss_ally - (1-alpha)/2*(loss_advr_1 + loss_advr_2)
                 # Backward pass
                 loss_encd.backward()
                 optimizer_encd.step()
@@ -307,8 +307,8 @@ def main(
                 y_advr_1_valid_hat_torch, y_advr_1_valid_torch)
             valid_loss_advr_2 = criterionBCEWithLogits(
                 y_advr_2_valid_hat_torch, y_advr_2_valid_torch)
-            valid_loss_encd = valid_loss_ally - valid_loss_advr_1 - \
-                valid_loss_advr_2
+            valid_loss_encd = alpha*valid_loss_ally - (1-alpha)/2*(valid_loss_advr_1 + \
+                valid_loss_advr_2)
 
             nsamples += 1
             iloss += valid_loss_encd.item()
@@ -392,7 +392,7 @@ def main(
 if __name__ == "__main__":
     expt = 'mimic'
     model = 'eigan'
-    marker = 'E'
+    marker = 'H'
     pr_time, fl_time = time_stp()
 
     logger(expt, model, fl_time, marker)
