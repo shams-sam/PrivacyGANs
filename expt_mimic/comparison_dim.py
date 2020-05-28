@@ -72,4 +72,3 @@ ax1.legend(prop={'size': 10})
 
 plot_location = 'plots/{}/{}_{}.png'.format('mimic', 'all', 'dim_comparison')
 plt.savefig(plot_location, bbox_inches='tight', dpi=300)
-

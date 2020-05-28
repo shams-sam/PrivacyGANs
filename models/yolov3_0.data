@@ -1,0 +1,6 @@
+classes= 1
+train=/data/Waymo/128x128/train.txt
+valid=/data/Waymo/128x128/valid.txt
+names=/data/Waymo/128x128/classes0.names
+datapath=/data/Waymo/128x128
+label=yolov3_0

@@ -108,3 +108,5 @@ data/
 checkpoints/
 plots/
 logs/
+*.pkl
+*.png

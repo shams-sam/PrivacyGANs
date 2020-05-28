@@ -110,6 +110,8 @@ def eigan_argparse(debug=True):
                     help="gpu/cpu")
     ap.add_argument("--n-gpu", type=int, required=True,
                     help="number of gpus")
+    ap.add_argument("--n-nodes", type=int, required=False,
+                    help="number of nodes")
     ap.add_argument("--n-ally", type=int, required=True,
                     help="number of ally classes")
     ap.add_argument("--n-advr", type=int, required=False,
