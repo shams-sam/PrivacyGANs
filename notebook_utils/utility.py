@@ -29,3 +29,4 @@ def to_numpy(tensor):
         tensor = tensor.detach().numpy()
 
     return tensor
+

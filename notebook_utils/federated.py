@@ -6,7 +6,6 @@ def federated(encoders, weights, global_params, phi, device):
     num_encoders = len(encoders)
     params = [_.named_parameters() for _ in encoders]
     dict_params = [dict(param) for param in params]
-
     if not len(global_params):
         for _, param in dict_params[0].items():
             global_params[_] = torch.zeros(param.size()).to(device)
@@ -20,8 +19,12 @@ def federated(encoders, weights, global_params, phi, device):
         for node_idx in range(num_encoders):
             weight[idx] += weights[node_idx] \
                            * dict_params[node_idx][key].data.flatten()[idx]
+        
         param = weight
-        param = param.reshape(size)
+        idx = torch.nonzero(param)
+        tmp = global_params[key].flatten()
+        tmp[idx] = param[idx]
+        param = tmp.reshape(size)
         global_params[key] = param
         for _ in dict_params:
             tmp = _[key].data

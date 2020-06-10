@@ -289,11 +289,11 @@ def centralized_3(
         X_valid_ = encoder(X_valid)
         y_1_valid_ = clf_1(X_valid_)
         y_2_valid_ = clf_2(X_valid_)
-        y_3_valid_ = clf_2(X_valid_)
+        y_3_valid_ = clf_3(X_valid_)
 
         clf_1_valid_loss = bce_1_loss(y_1_valid_, y_1_valid)
         clf_2_valid_loss = bce_2_loss(y_2_valid_, y_2_valid)
-        clf_3_valid_loss = bce_2_loss(y_3_valid_, y_3_valid)
+        clf_3_valid_loss = bce_3_loss(y_3_valid_, y_3_valid)
         encd_valid_loss = clf_1_valid_loss \
             - alpha * (clf_2_valid_loss - eps2) \
             - alpha * (clf_3_valid_loss - eps3)
@@ -309,7 +309,7 @@ def centralized_3(
             clf_3_train.append(clf_3_train_loss.item())
             clf_3_valid.append(clf_3_valid_loss.item())
 
-        if epoch % 500 != 0 and (debug or plot):
+        if epoch % 20 != 0 and (debug or plot):
             continue
 
         if debug:
@@ -426,7 +426,7 @@ def distributed(
         weights[idx] = len(X_trains[idx])
     weights = weights/weights.sum()
     encoders = federated(encoders, weights, global_params, 1, device)
-
+    
     for epoch in range(n_iter_gan):
         if d == delta and delta != 0 and phi != 0:
             print('Aggregating on epoch: {}...'.format(epoch))
@@ -696,7 +696,6 @@ def distributed_3(
                 clf_3_train_loss.backward()
                 clf_3_optimizers[node_idx].step()
 
-            
             X_valid_ = encoders[node_idx](X_valids[node_idx].to(device))
             y_1_valid_ = clfs_1[node_idx](X_valid_)
             y_2_valid_ = clfs_2[node_idx](X_valid_)
@@ -809,8 +808,8 @@ def distributed_3_diff(
     clf_2_optimizers = []
     clf_3_optimizers = []
 
-    clf_2_active = [0]
-    clf_3_active = [1]
+    clf_2_active = [0, 2, 4, 6, 8]
+    clf_3_active = [1, 3, 5, 7, 9]
 
     for _ in range(num_nodes):
         encoders.append(Encoder(input_size=input_size, hidden_size=hidden_size,

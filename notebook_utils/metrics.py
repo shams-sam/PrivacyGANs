@@ -19,6 +19,7 @@ def centralized(
         w,
         device,
         clfs=['mlp', 'logistic', 'svm'],
+        n_iter=1001,
 ):
 
     if not transform:
@@ -48,8 +49,9 @@ def centralized(
         print('-'*80)
 
         mlp.train()
-        n_iter = 1001
-
+        acc = 0
+        actuals_ = None
+        predicted_ = None
         for epoch in range(n_iter):
             y_train_ = mlp(X_train_)
             y_valid_ = mlp(X_valid_)
@@ -64,19 +66,25 @@ def centralized(
             predicted = np.argmax(to_numpy(y_valid_), axis=1)
             actuals = np.argmax(to_numpy(y_valid), axis=1)
             correct = (predicted == actuals).sum().item()
+            acc_ = correct/total
+            if acc_ > acc:
+                acc = acc_
+                predicted_ = predicted
+                actuals_ = actuals
 
             if epoch % 200 != 0:
                 continue
 
-            print('{} \t {:.6f} \t {:.6f} \t {:.4f}'.format(
+            print('{} \t {:.6f} \t {:.6f} \t {:.4f} \t{:.4f}'.format(
                 epoch,
                 mlp_train_loss.item(),
                 mlp_valid_loss.item(),
-                correct/total,
+                acc_,
+                acc
             ))
 
-            predicted = np.argmax(to_numpy(mlp(X_valid_)), axis=1)
-            actuals = np.argmax(to_numpy(y_valid), axis=1)
+            predicted = predicted_
+            actuals = actuals_
             mlp_cm = confusion_matrix(predicted, actuals)
             error_rate_mlp = (mlp_cm[0, 1] + mlp_cm[1, 0])/mlp_cm.sum()
             correct = (predicted == actuals).sum().item()
@@ -86,7 +94,7 @@ def centralized(
         error_rate_tape['mlp'] = error_rate_mlp
         accuracy_tape['mlp'] = correct/total
         f1_tape['mlp'] = f1_score(predicted, actuals)
-        assert error_rate_tape['mlp'] + accuracy_tape['mlp'] == 1
+        # assert error_rate_tape['mlp'] + accuracy_tape['mlp'] == 1
         print('Accuracy: {}\nError Rate: {}\nF1 Score: {}'.format(
             accuracy_tape['mlp'], error_rate_tape['mlp'], f1_tape['mlp']))
 
@@ -167,7 +175,8 @@ def distributed(
         y_valids,
         w,
         device,
-        clfs=['mlp', 'logistic', 'svm']
+        clfs=['mlp', 'logistic', 'svm'],
+        n_iter=1001,
 ):
 
     if not transforms:
@@ -210,7 +219,10 @@ def distributed(
         print('-'*80)
 
         mlp.train()
-        n_iter = 1001
+
+        acc = 0
+        actuals_ = None
+        predicted_ = None
 
         for epoch in range(n_iter):        
             y_train_ = mlp(X_train_)
@@ -227,19 +239,26 @@ def distributed(
             actuals = np.argmax(to_numpy(y_valid), axis=1)
             correct = (predicted == actuals).sum().item()
 
+            acc_ = correct/total
+            if acc_ > acc:
+                acc = acc_
+                predicted_ = predicted
+                actuals_ = actuals
+
             if epoch % 200 != 0:
                 continue
 
-            print('{} \t {:.6f} \t {:.6f} \t {:.4f}'.format(
+            print('{} \t {:.6f} \t {:.6f} \t {:.4f} \t {:.4f}'.format(
                 epoch,
                 mlp_train_loss.item(),
                 mlp_valid_loss.item(),
-                correct/total,
+                acc_,
+                acc
             ))
 
-        predicted = np.argmax(to_numpy(mlp(X_valid_)), axis=1)
-        actuals = np.argmax(to_numpy(y_valid), axis=1)
+        predicted = predicted_
         mlp_cm = confusion_matrix(predicted, actuals)
+        actuals = actuals_
         error_rate_mlp = (mlp_cm[0, 1] + mlp_cm[1, 0])/mlp_cm.sum()
         correct = (predicted == actuals).sum().item()
         total = y_valid.size(0)
@@ -248,7 +267,7 @@ def distributed(
         error_rate_tape['mlp'] = error_rate_mlp
         accuracy_tape['mlp'] = correct/total
         f1_tape['mlp'] = f1_score(predicted, actuals)
-        assert error_rate_tape['mlp'] + accuracy_tape['mlp'] == 1
+        # assert error_rate_tape['mlp'] + accuracy_tape['mlp'] == 1
         print('Accuracy: {}\nError Rate: {}\nF1 Score: {}'.format(
             accuracy_tape['mlp'], error_rate_tape['mlp'], f1_tape['mlp']))
 
