@@ -2,14 +2,14 @@
 import glob
 import random
 import os
-import sys
 import numpy as np
 from PIL import Image
 import torch
 import torch.nn.functional as F
 import tqdm
 
-from utility import horisontal_flip, get_batch_statistics, ap_per_class, non_max_suppression, xywh2xyxy
+from utility import horisontal_flip, get_batch_statistics, \
+    ap_per_class, non_max_suppression, xywh2xyxy
 from torch.utils.data import Dataset
 import torchvision.transforms as transforms
 from torch.autograd import Variable
@@ -29,7 +29,8 @@ def pad_to_square(img, pad_value):
 
 
 def resize(image, size):
-    image = F.interpolate(image.unsqueeze(0), size=size, mode="nearest").squeeze(0)
+    image = F.interpolate(image.unsqueeze(0), size=size,
+                          mode="nearest").squeeze(0)
     return image
 
 
@@ -39,21 +40,27 @@ def random_resize(images, min_size=288, max_size=448):
     return images
 
 
-def evaluate(model, path, label_folder, iou_thres, conf_thres, nms_thres, img_size, batch_size):
+def evaluate(model, path, label_folder,
+             iou_thres, conf_thres, nms_thres, img_size, batch_size):
     model.eval()
 
     # Get dataloader
-    dataset = ListDataset(path, label_folder, img_size=img_size, augment=False, multiscale=False)
+    dataset = ListDataset(path, label_folder,
+                          img_size=img_size, augment=False, multiscale=False)
     dataloader = torch.utils.data.DataLoader(
-        dataset, batch_size=batch_size, shuffle=False, num_workers=1, collate_fn=dataset.collate_fn
+        dataset, batch_size=batch_size, shuffle=False,
+        num_workers=1, collate_fn=dataset.collate_fn
     )
 
-    Tensor = torch.cuda.FloatTensor if torch.cuda.is_available() else torch.FloatTensor
+    Tensor = torch.cuda.FloatTensor \
+        if torch.cuda.is_available() \
+        else torch.FloatTensor
 
     labels = []
     sample_metrics = []  # List of tuples (TP, confs, pred)
 
-    for batch_i, (_, imgs, targets) in enumerate(tqdm.tqdm(dataloader, desc="Detecting objects")):
+    for batch_i, (_, imgs, targets) in enumerate(
+            tqdm.tqdm(dataloader, desc="Detecting objects")):
 
         targets_ = targets.clone()
         # Extract labels
@@ -66,14 +73,18 @@ def evaluate(model, path, label_folder, iou_thres, conf_thres, nms_thres, img_si
         targets_ = Variable(targets_.type(Tensor), requires_grad=False)
         with torch.no_grad():
             loss, outputs = model(imgs, targets_)
-            outputs = non_max_suppression(outputs, conf_thres=conf_thres, nms_thres=nms_thres)
+            outputs = non_max_suppression(
+                outputs, conf_thres=conf_thres, nms_thres=nms_thres)
 
-        sample_metrics += get_batch_statistics(outputs, targets, iou_threshold=iou_thres)
-        
+        sample_metrics += get_batch_statistics(
+            outputs, targets, iou_threshold=iou_thres)
+
     # Concatenate sample statistics
-    true_positives, pred_scores, pred_labels = [np.concatenate(x, 0) for x in list(zip(*sample_metrics))]
-    precision, recall, AP, f1, ap_class = ap_per_class(true_positives, pred_scores, pred_labels, labels)
-    
+    true_positives, pred_scores, pred_labels = [
+        np.concatenate(x, 0) for x in list(zip(*sample_metrics))]
+    precision, recall, AP, f1, ap_class = ap_per_class(
+        true_positives, pred_scores, pred_labels, labels)
+
     return precision, recall, AP, f1, ap_class, loss.item()
 
 
@@ -98,21 +109,25 @@ class ImageFolder(Dataset):
 
 
 class ListDataset(Dataset):
-    def __init__(self, list_path, label_0, label_1=None, img_size=128, augment=True, multiscale=True, normalized_labels=True):
+    def __init__(self, list_path, label_0, label_1=None,
+                 img_size=128, augment=True,
+                 multiscale=True, normalized_labels=True):
         with open(list_path, "r") as file:
             self.img_files = file.readlines()
 
         self.label_files_0 = [
-            path.replace("images", label_0).replace(".png", ".txt").replace(".jpg", ".txt")
+            path.replace("images", label_0).replace(
+                ".png", ".txt").replace(".jpg", ".txt")
             for path in self.img_files
         ]
         self.label_files_1 = []
         if label_1:
             self.label_files_1 = [
-                path.replace("images", label_1).replace(".png", ".txt").replace(".jpg", ".txt")
+                path.replace("images", label_1).replace(
+                    ".png", ".txt").replace(".jpg", ".txt")
                 for path in self.img_files
             ]
-            
+
         self.img_size = img_size
         self.max_objects = 100
         self.augment = augment
@@ -172,7 +187,7 @@ class ListDataset(Dataset):
 
             targets_0 = torch.zeros((len(boxes), 6))
             targets_0[:, 1:] = boxes
-        
+
         targets_1 = None
         if os.path.exists(label_path_1) and len(self.label_files_1):
             boxes = torch.from_numpy(np.loadtxt(label_path_1).reshape(-1, 5))
@@ -195,11 +210,11 @@ class ListDataset(Dataset):
             targets_1 = torch.zeros((len(boxes), 6))
             targets_1[:, 1:] = boxes
 
-            
         # Apply augmentations
         if self.augment:
             if np.random.random() < 0.5:
-                img, targets_0, targets_1 = horisontal_flip(img, targets_0, targets_1)
+                img, targets_0, targets_1 = horisontal_flip(
+                    img, targets_0, targets_1)
 
         if len(self.label_files_1):
             return img_path, img, targets_0, targets_1
@@ -219,7 +234,8 @@ class ListDataset(Dataset):
         targets_1 = torch.cat(targets_1, 0)
         # Selects new image size every tenth batch
         if self.multiscale and self.batch_count % 10 == 0:
-            self.img_size = random.choice(range(self.min_size, self.max_size + 1, 32))
+            self.img_size = random.choice(
+                range(self.min_size, self.max_size + 1, 32))
         # Resize images to input shape
         imgs = torch.stack([resize(img, self.img_size) for img in imgs])
         self.batch_count += 1

@@ -1,1 +1,0 @@
-rsync -r -a -v -e ssh kratos:/home/m1cro1ce/WorkSpace/PrivacyGAN /home/m1cro1ce/WorkSpace/AIThiest

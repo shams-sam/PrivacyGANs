@@ -1,1 +1,0 @@
-rsync -r -a -v -e ssh zeus:/home/m1cro1ce/WorkSpace/AIThiest/PrivacyGAN /home/m1cro1ce/WorkSpace
