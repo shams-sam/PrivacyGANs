@@ -7,9 +7,16 @@ import tqdm
 
 # https://stackoverflow.com/questions/34980833/python-name-of-np-array-variable-as-string
 
+def eigan_loss(losses, weights):
+    assert len(losses) == len(weights)
+    return sum([l*w for l, w in zip(losses, weights)])
 
 def _namestr(obj, namespace):
     return [name for name in namespace if namespace[name] is obj]
+
+
+def booltype(arg):
+    return bool(int(arg))
 
 
 def time_stp():
@@ -39,13 +46,14 @@ def sep(message=False):
         logging.info('{}{}{}'.format('+'*padding, message, '+'*padding))
 
 
-def torch_device(device):
+def torch_device(device, gpu_id):
     dtype = torch.float
     if device == 'gpu':
-        device = torch.device("cuda") \
+        device = torch.device("cuda:{}".format(gpu_id)) \
             if torch.cuda.is_available() else torch.device("cpu")
-    else:
+    elif device == 'cpu':
         device = torch.device("cpu")
+
     logging.info('='*80)
     logging.info("DType: {}\nCuda available: {}\nDevice: {}".format(
         dtype.__str__(),
@@ -65,9 +73,8 @@ def load_processed_data(expt, file='processed_data_X_y_ally_y_advr.pkl'):
     )
 
 
-def logger(expt, model, time_stamp, marker):
-    # log_path = 'logs/{}/{}_{}_{}.log'.format(expt, model, time_stamp, marker)
-    log_path = 'ckpts/{}/logs/{}_{}.log'.format(expt, model, marker)
+def logger(expt, model):
+    log_path = '../ckpts/{}/logs/{}.log'.format(expt, model)
     print(log_path)
     logging.basicConfig(
         filename=log_path,
@@ -75,6 +82,7 @@ def logger(expt, model, time_stamp, marker):
         format='%(message)s',
         level=logging.INFO
     )
+    return log_path
 
 
 def to_categorical(y, num_classes=None, dtype='float32'):
@@ -462,3 +470,74 @@ def compute_ap(recall, precision):
     # and sum (\Delta recall) * prec
     ap = np.sum((mrec[i + 1] - mrec[i]) * mpre[i + 1])
     return ap
+
+def get_network(arch, num_layers):
+    net = '{}{}'.format(arch, num_layers)
+    if net == 'vgg19':
+        from vgg import vgg19_bn
+        net = vgg19_bn
+    elif net == 'densenet161':
+        from models.densenet import densenet161
+        net = densenet161
+    elif net == 'densenet201':
+        from models.densenet import densenet201
+        net = densenet201
+    elif net == 'googlenet':
+        from models.googlenet import googlenet
+        net = googlenet
+    elif net == 'inceptionv3':
+        from models.inceptionv3 import inceptionv3
+        net = inceptionv3
+    elif net == 'inceptionv4':
+        from models.inceptionv4 import inceptionv4
+        net = inceptionv4
+    elif net == 'inceptionresnetv2':
+        from models.inceptionv4 import inception_resnet_v2
+        net = inception_resnet_v2
+    elif net == 'xception':
+        from models.xception import xception
+        net = xception
+    elif net == 'preactresnet152':
+        from models.preactresnet import preactresnet152
+        net = preactresnet152
+    elif net == 'resnext50':
+        from resnet import resnext50_32x4d
+        net = resnext50_32x4d
+    elif net == 'resnext101':
+        from resnet import resnext101_32x8d
+        net = resnext101_32x8d
+    elif net == 'resnext152':
+        from resnext import resnext152
+        net = resnext152
+    elif net == 'shufflenetv2':
+        from models.shufflenetv2 import shufflenetv2
+        net = shufflenetv2
+    elif net == 'squeezenet':
+        from models.squeezenet import squeezenet
+        net = squeezenet
+    elif net == 'mobilenetv2':
+        from models.mobilenetv2 import mobilenetv2
+        net = mobilenetv2
+    elif net == 'nasnet':
+        from models.nasnet import nasnet
+        net = nasnet
+    elif net == 'attention92':
+        from models.attention import attention92
+        net = attention92
+    elif net == 'seresnet152':
+        from models.senet import seresnet152
+        net = seresnet152
+    elif net == 'wideresnet101':
+        from resnet import wide_resnet101_2
+        net = wide_resnet101_2
+
+    return net
+
+def get_n_params(model):
+    pp=0
+    for p in list(model.parameters()):
+        nn=1
+        for s in list(p.size()):
+            nn = nn*s
+        pp += nn
+    return pp
