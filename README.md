@@ -1,11 +1,14 @@
-**NOTE: ACCOMPANYING DATA CAN BE DOWNLOADED FROM THE [DRIVE](https://drive.google.com/file/d/1h1brXcywHgxCEFKzjc0yu6WQMr8IRUvz/view?usp=sharing).**
+# PrivacyGANs
+
+- ArXiv: [Towards Generalized and Distributed Privacy-Preserving Representation Learning](https://arxiv.org/abs/2010.01792)
+- Github: [PrivacyGANs](https://github.com/shams-sam/PrivacyGANs)
+- Data: [Drive Link](https://drive.google.com/file/d/1h1brXcywHgxCEFKzjc0yu6WQMr8IRUvz/view?usp=sharing)
+
+## Instructions
 
 - **Datasets have to be downloaded individually as per regulations and copyrights.**
 - Drive contains the model checkpoints, training histories, and corresponding plots.
 - Data is in the same directory structure as required by project (paste in corresponding folders).
-
-# EIGAN
-
 - docker integration is used to reduce the overhead of setting up environment.
 - users are welcome to use non-docker environments on their own.
 - prepopulated hyperparameters and training logs as well as pretrained models are made available for evaluation.
