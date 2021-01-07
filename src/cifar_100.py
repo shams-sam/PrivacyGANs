@@ -4,7 +4,7 @@ from torchvision import datasets
 
 
 class CIFAR100:
-    _dataset = datasets.CIFAR100(cfg.data_folder)
+    _dataset = datasets.CIFAR100(cfg.data_folder, download=cfg.download)
     _coarse_to_fine = {
         'aquatic_mammals': ['beaver', 'dolphin', 'otter', 'seal', 'whale'],
         'fish': ['aquarium_fish', 'flatfish', 'ray', 'shark', 'trout'],

@@ -51,7 +51,7 @@ def main(
                      64, gpu_id=device)
     clfs = [Net(num_channels=cfg.num_channels[expt],
                 num_classes=_).to(device) for _ in n_classes if _ > 0]
-    
+
     if len(gpu_id) > 1:
         net_G = nn.DataParallel(net_G, device_ids=gpu_id)
         clfs = [nn.DataParallel(clf, device_ids=gpu_id) for clf in clfs]
@@ -75,7 +75,8 @@ def main(
     elif optimizer == 'adam':
         optim = torch.optim.Adam
     scheduler = torch.optim.lr_scheduler.MultiStepLR
-    opt_G = torch.optim.Adam(net_G.parameters(), lr=lr_g, weight_decay=weight_decays[0])
+    opt_G = torch.optim.Adam(net_G.parameters(), lr=lr_g,
+                             weight_decay=weight_decays[0])
     opt_clfs = [optim(clf.parameters(), lr=lr, weight_decay=weight_decays[1])
                 for lr, clf in zip(lr_clfs, clfs)]
     sch_clfs = [scheduler(optim, milestones, gamma=gamma)
@@ -86,8 +87,10 @@ def main(
     criterionGAN = eigan_loss
     criterionNLL = nn.CrossEntropyLoss().to(device)
 
-    train_loader = get_loader(expt, batch_size, True, img_size=img_size, subset=subset)
-    valid_loader = get_loader(expt, test_batch_size, False, img_size=img_size, subset=subset)
+    train_loader = get_loader(expt, batch_size, True,
+                              img_size=img_size, subset=subset)
+    valid_loader = get_loader(expt, test_batch_size,
+                              False, img_size=img_size, subset=subset)
 
     template = '{}'.format(model_name)
 
@@ -100,7 +103,8 @@ def main(
 
         for iteration, (image, labels) in enumerate(train_loader, 1):
             real = image.to(device)
-            ys = [_.to(device) for _, num_c in zip(labels, n_classes) if num_c > 0]
+            ys = [_.to(device)
+                  for _, num_c in zip(labels, n_classes) if num_c > 0]
 
             with torch.no_grad():
                 X = net_G(real)
@@ -131,7 +135,6 @@ def main(
             loss_g.backward()
             opt_G.step()
 
-
             logging.info(
                 '[{}]({}/{}) \t {:.4f} '.format(
                     epoch, iteration, len(train_loader),
@@ -158,7 +161,8 @@ def main(
 
             real = image.to(device)
             fake = net_G(real)
-            ys = [_.to(device) for _, num_c in zip(labels, n_classes) if num_c > 0]
+            ys = [_.to(device)
+                  for _, num_c in zip(labels, n_classes) if num_c > 0]
 
             ys_hat = [clf(fake) for clf in clfs]
             loss = [criterionNLL(y_hat, y)
@@ -213,11 +217,13 @@ def main(
             ax.axis('off')
             sample = sample.permute(1, 2, 0)
             plt.imshow(sample.squeeze().numpy())
-            plt.savefig('{}/{}/validation/tmp.jpg'.format(cfg.ckpt_folder, expt))
+            plt.savefig(
+                '{}/{}/validation/tmp.jpg'.format(cfg.ckpt_folder, expt))
             ax = plt.subplot(2, 4, 5+i)
             ax.axis('off')
             ax.set_title(" ".join(label))
-            sample_G = net_G(sample.clone().permute(2, 0, 1).unsqueeze_(0).to(device))
+            sample_G = net_G(sample.clone().permute(
+                2, 0, 1).unsqueeze_(0).to(device))
             sample_G = sample_G.cpu().detach().squeeze()
             if sample_G.shape[0] == 3:
                 sample_G = sample_G.permute(1, 2, 0)
@@ -236,7 +242,6 @@ def main(
                 cfg.ckpt_folder, expt, model_name, epoch)
             logging.info('Model: {}'.format(model_ckpt))
             torch.save(net_G.state_dict(), model_ckpt)
-            
 
         [sch.step() for sch in sch_clfs]
 
@@ -281,7 +286,7 @@ def main(
         cfg.ckpt_folder, expt, model_name)
     logging.info('Model: {}'.format(model_ckpt))
     torch.save(net_G.state_dict(), model_ckpt)
-    
+
     for idx, clf in enumerate(clfs):
         model_ckpt = '{}/{}/models/{}_clf_{}.stop'.format(
             cfg.ckpt_folder, expt, model_name, idx)

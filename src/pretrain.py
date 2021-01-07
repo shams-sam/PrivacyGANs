@@ -6,6 +6,7 @@ import numpy as np
 import pickle as pkl
 import torch
 import torch.nn as nn
+import traceback
 
 from argparser import parse
 import config as cfg
@@ -13,6 +14,7 @@ from data import get_loader
 from utils import log_time, torch_device,\
     time_stp, logger, sep, weights_init
 from pix2pix import define_G, define_D, GANLoss
+from proc_handler import cleanup, setup_graceful_exit
 from resnet import get_resnet
 from torchsummary import summary
 
@@ -81,8 +83,10 @@ def main(
     elif optimizer == 'adam':
         optim = torch.optim.Adam
     scheduler = torch.optim.lr_scheduler.MultiStepLR
-    opt_G = torch.optim.Adam(net_G.parameters(), lr=lr_g, weight_decay=weight_decays[0])
-    opt_D = torch.optim.Adam(net_D.parameters(), lr=lr_d, weight_decay=weight_decays[1])
+    opt_G = torch.optim.Adam(net_G.parameters(), lr=lr_g,
+                             weight_decay=weight_decays[0])
+    opt_D = torch.optim.Adam(net_D.parameters(), lr=lr_d,
+                             weight_decay=weight_decays[1])
     opt_clfs = [optim(clf.parameters(), lr=lr, momentum=0.9, weight_decay=weight_decays[2])
                 for lr, clf in zip(lr_clfs, clfs)]
     sch_clfs = [scheduler(optim, milestones, gamma=gamma)
@@ -94,8 +98,10 @@ def main(
     criterionL1 = nn.L1Loss().to(device)
     criterionNLL = nn.CrossEntropyLoss().to(device)
 
-    train_loader = get_loader(expt, batch_size, True, img_size=img_size, subset=subset)
-    valid_loader = get_loader(expt, test_batch_size, False, img_size=img_size, subset=subset)
+    train_loader = get_loader(expt, batch_size, True,
+                              img_size=img_size, subset=subset)
+    valid_loader = get_loader(expt, test_batch_size,
+                              False, img_size=img_size, subset=subset)
 
     template = '{}'.format(model_name)
 
@@ -340,6 +346,7 @@ def main(
 
 
 if __name__ == '__main__':
+    setup_graceful_exit()
     model = 'pretrain'
     args = parse()
     pr_time, fl_time = time_stp()
@@ -349,29 +356,38 @@ if __name__ == '__main__':
     sep()
     logging.info(json.dumps(args.__dict__, indent=2))
 
-    main(
-        expt=args.expt,
-        model_name=model,
-        device=args.device,
-        gpu_id=args.gpu_id,
-        train_nets=args.train_nets,
-        optimizer=args.optimizer,
-        num_layers=args.num_layers,
-        n_classes=args.n_classes,
-        img_size=args.img_size,
-        batch_size=args.batch_size,
-        test_batch_size=args.test_batch_size,
-        subset=args.subset,
-        init_w=args.init_w,
-        load_w=args.load_w,
-        ckpt_g=args.ckpt_g,
-        ckpt_d=args.ckpt_d,
-        ckpt_clfs=args.ckpt_clfs,
-        n_epochs=args.n_epochs,
-        lr_g=args.lr_g,
-        lr_d=args.lr_d,
-        lr_clfs=args.lr_clfs,
-        weight_decays=args.weight_decays,
-        milestones=args.milestones,
-        gamma=args.gamma,
-    )
+    try:
+        main(
+            expt=args.expt,
+            model_name=model,
+            device=args.device,
+            gpu_id=args.gpu_id,
+            train_nets=args.train_nets,
+            optimizer=args.optimizer,
+            num_layers=args.num_layers,
+            n_classes=args.n_classes,
+            img_size=args.img_size,
+            batch_size=args.batch_size,
+            test_batch_size=args.test_batch_size,
+            subset=args.subset,
+            init_w=args.init_w,
+            load_w=args.load_w,
+            ckpt_g=args.ckpt_g,
+            ckpt_d=args.ckpt_d,
+            ckpt_clfs=args.ckpt_clfs,
+            n_epochs=args.n_epochs,
+            lr_g=args.lr_g,
+            lr_d=args.lr_d,
+            lr_clfs=args.lr_clfs,
+            weight_decays=args.weight_decays,
+            milestones=args.milestones,
+            gamma=args.gamma,
+        )
+    except (KeyboardInterrupt, SystemExit):
+        # do not print stack trace when ctrl-c is pressed
+        pass
+    except Exception:
+        traceback.print_exc(file=sys.stdout)
+    finally:
+        traceback.print_exc(file=sys.stdout)
+        cleanup()

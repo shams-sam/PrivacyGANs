@@ -1,4 +1,5 @@
-from cifar_100 import CIFAR100
+import os
+
 import config as cfg
 from sklearn.model_selection import train_test_split
 import torch
@@ -11,10 +12,11 @@ def get_subset_index(classes, split=0.3):
 
     return idx_valid
 
+
 def get_loader(dataset, batch_size, train, img_size=64,
                subset=1, shuffle=True, data_folder=cfg.data_folder):
     kwargs = {}
-        
+
     if dataset == 'mnist':
         def target_transform(target):
             a = 1-(target % 2)
@@ -29,6 +31,8 @@ def get_loader(dataset, batch_size, train, img_size=64,
         dataloader = torch.utils.data.DataLoader(
             dataset, batch_size=batch_size, shuffle=shuffle, **kwargs)
     elif dataset == 'cifar_100':
+        from cifar_100 import CIFAR100
+
         def target_transform(target):
             coarse = CIFAR100.get_coarse_class_ids([target])
             return (target, coarse[0])
@@ -37,7 +41,8 @@ def get_loader(dataset, batch_size, train, img_size=64,
             transform=transforms.Compose([
                 transforms.ToTensor(),
                 transforms.Normalize((0.5071, 0.4865, 0.4409),
-                                     (0.2673, 0.2564, 0.2761))]),
+                                     (0.2673, 0.2564, 0.2761))
+            ]),
             target_transform=target_transform)
         dataloader = torch.utils.data.DataLoader(
             dataset, batch_size=batch_size, shuffle=shuffle, **kwargs)
@@ -60,6 +65,25 @@ def get_loader(dataset, batch_size, train, img_size=64,
         if subset < 1:
             indices = get_subset_index(dataset.attr, subset)
             dataset = torch.utils.data.Subset(dataset, indices)
+        dataloader = torch.utils.data.DataLoader(
+            dataset, batch_size=batch_size, shuffle=shuffle, **kwargs)
+    elif dataset == 'facescrub':
+        from facescrub import FaceScrub
+
+        def target_transform(target):
+            gender = FaceScrub.get_gender([target])
+            return (target, gender[0])
+        subfolder = 'FaceScrub/split/{}'.format('train' if train else 'val')
+        dataset = datasets.ImageFolder(
+            os.path.join(data_folder, subfolder),
+            transform=transforms.Compose([
+                transforms.Resize((img_size, img_size)),
+                transforms.ToTensor(),
+                transforms.Normalize((0.6106, 0.4647, 0.3955),
+                                     (0.2673, 0.2564, 0.2761))
+            ]),
+            target_transform=target_transform,
+        )
         dataloader = torch.utils.data.DataLoader(
             dataset, batch_size=batch_size, shuffle=shuffle, **kwargs)
 
