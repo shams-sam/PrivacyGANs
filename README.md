@@ -1,6 +1,8 @@
 # PrivacyGANs
 
-- ArXiv: [Towards Generalized and Distributed Privacy-Preserving Representation Learning](https://arxiv.org/abs/2010.01792)
+![EIGAN](EIGAN.png)
+
+- ArXiv: [Can we Generalize and Distribute Private Representation Learning?](https://arxiv.org/abs/2010.01792)
 - Github: [PrivacyGANs](https://github.com/shams-sam/PrivacyGANs)
 - Data: [Drive Link](https://drive.google.com/file/d/1h1brXcywHgxCEFKzjc0yu6WQMr8IRUvz/view?usp=sharing)
 
@@ -55,3 +57,15 @@ sh sh/<script-name>.sh <expt-name>
 ## Comparison
 - comparison scripts need editing of python scripts
 - replace the names of the pre-populated training histories with the newly generated training histories after training to generate new plots and analysis.
+
+## Citation
+If you find the [repository](https://github.com/shams-sam/PrivacyGANs) or the [paper](https://arxiv.org/abs/2010.01792) useful, please cite the following paper
+```
+@inproceedings{azam2022can,
+  title={Can we Generalize and Distribute Private Representation Learning?},
+  author={Sheikh Shams Azam and Taejin Kim and Seyyedali Hosseinalipour and Carlee Joe-Wong and Saurabh Bagchi and Christopher Brinton},
+  booktitle={International Conference on Artificial Intelligence and Statistics},
+  year={2022},
+  url={https://arxiv.org/abs/2010.01792}
+}
+```
