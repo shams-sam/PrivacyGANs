@@ -61,11 +61,18 @@ sh sh/<script-name>.sh <expt-name>
 ## Citation
 If you find the [repository](https://github.com/shams-sam/PrivacyGANs) or the [paper](https://arxiv.org/abs/2010.01792) useful, please cite the following paper
 ```
-@inproceedings{azam2022can,
-  title={Can we Generalize and Distribute Private Representation Learning?},
-  author={Sheikh Shams Azam and Taejin Kim and Seyyedali Hosseinalipour and Carlee Joe-Wong and Saurabh Bagchi and Christopher Brinton},
-  booktitle={International Conference on Artificial Intelligence and Statistics},
+@InProceedings{azam2022can,
+  title={{ Can we Generalize and Distribute Private Representation Learning? }},
+  author={Azam, Sheikh Shams and Kim, Taejin and Hosseinalipour, Seyyedali and Joe-Wong, Carlee and Bagchi, Saurabh and Brinton, Christopher},
+  booktitle={Proceedings of The 25th International Conference on Artificial Intelligence and Statistics},
+  pages={11320--11340},
   year={2022},
-  url={https://arxiv.org/abs/2010.01792}
+  editor={Camps-Valls, Gustau and Ruiz, Francisco J. R. and Valera, Isabel},
+  volume={151},
+  series={Proceedings of Machine Learning Research},
+  month={28--30 Mar},
+  publisher={PMLR},
+  pdf={https://proceedings.mlr.press/v151/shams-azam22a/shams-azam22a.pdf},
+  url={https://proceedings.mlr.press/v151/shams-azam22a.html}
 }
 ```
